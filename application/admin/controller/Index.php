@@ -4,7 +4,8 @@
  */
 namespace app\admin\controller;
 
-use think\controller;
+use think\Controller;
+use app\common\model\User;
 
 class Index extends Controller
 {
@@ -15,8 +16,8 @@ class Index extends Controller
 
     public function login()
     {
-        if ($this->request-isPost()) {
-            User::getInstance()->login();
+        if ($this->request->isPost()) {
+            User::getInstance()->login($this->request);
         }
     }
 }

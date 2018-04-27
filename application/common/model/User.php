@@ -1,6 +1,7 @@
 <?php
 /**
  * 用户模型
+ * 登录逻辑
  */
 namespace app\common\model;
 
@@ -9,17 +10,24 @@ use think\Request;
 
 class User extends Model
 {
+    protected $name = 'user_accounts';
+
     public static $instance;
     static public function getInstance()
     {
         if (!self::$instance) {
-            self::$instance = new $static();  //new self
+            self::$instance = new static();  //new self
         }
+        return self::$instance;
     }
 
-    //用户登录
+    /**
+     * 用户登录逻辑
+     * @author <kai930322@outlook.com>
+     */
     public function login(Request $request)
     {
+        //限制传入的数据
         $user_account = $request->post('u_account', '', 'trim');
         $user_password = $request->post('u_password', '', 'trim');
         $user_type = $request->post('u_type', '', 'trim');
@@ -52,7 +60,7 @@ class User extends Model
                 //判断密码
                 $passwordHash = new \Pentagonal\PhPass\PasswordHash();
                 /**
-                 * 密码 = 用户密码 + 用户密码盐
+                 * 密码 = 用户明文密码 + 用户密码盐
                  */
                 $passwordMatch = $passwordHash->checkPassword(
                   $user_password . $user->user_salt,
@@ -65,9 +73,11 @@ class User extends Model
                     $user->user_last_at = time();
                     //ip()传值转换为ipv4样式
                     $user->user_last_ip = $request->ip(1); 
-                    //uniqid()生产唯一id,从而拿到加密后的盐
+                    //uniqid()生产唯一字符串(微秒数，熵),拿到加密的盐
                     $user->user_salt = $passwordHash->hasPassword(uniqid(microtime(), true));
+                    //拿到加密后的密码
                     $user->user_password = $passwordHash->hasPassword($user_password . $user->user_salt);
+                    //拿到的数据写入数据库
                     $user->save();
                 } else {
                     //todo::账号密码不匹配
