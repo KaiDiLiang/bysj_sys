@@ -57,7 +57,7 @@ class User extends Model
         /*用户是否存在*/
         if (!is_null($user)) {
             if ($user->user_enable === 'Y') {
-                //判断密码
+                //密码加密
                 $passwordHash = new \Pentagonal\PhPass\PasswordHash();
                 /**
                  * 密码 = 用户明文密码 + 用户密码盐
@@ -68,6 +68,7 @@ class User extends Model
                 );
                 if ($isPasswordMatch) {
                     /**更新用户表的信息
+                     * time()获取时间戳
                      * lastIp, 加密后的salt盐
                      */
                     $user->user_last_at = time();
