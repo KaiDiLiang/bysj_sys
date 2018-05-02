@@ -17,5 +17,9 @@ require __DIR__ . '/../thinkphp/base.php';
 
 // 支持事先使用静态方法设置Request对象和Config对象
 
+/**
+ * 定义密钥
+ */
+define('SUMMUY_KEY', 'YUN_NET_CMS_2018');
 // 执行应用并响应
 Container::get('app')->run()->send();

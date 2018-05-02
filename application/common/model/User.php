@@ -80,8 +80,8 @@ class User extends Model
                     $user->user_password = $passwordHash->hasPassword($user_password . $user->user_salt);
                     //拿到的数据写入数据库
                     $user->save();
-                    //生成Token,(索引数组形式)
-                    Tonken::getInstance()->generate($user->user_id, $user->user_role_id, $user->user_salt);
+                    //生成Token,索引数组形式
+                    return Tonken::getInstance()->generate($user->user_id, $user->user_role_id, $user->user_salt);
                 } else {
                     //todo::账号密码不匹配
                 }
