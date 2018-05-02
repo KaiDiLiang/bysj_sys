@@ -44,7 +44,8 @@ class API extends Model
          * end()，取最后一个
          */
         if (!$result) {
-            $type = end(explode('-', strtolower($code)));
+            $temp = explode('-', strtolower($code));
+            $type = end($temp);
             if ($type === 'success') {
                 $result = ['code' => 0, 'remark' => $code];
             }
