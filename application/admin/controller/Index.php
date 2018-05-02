@@ -1,13 +1,14 @@
 <?php
 /**
  * 后台入口控制器
+ * @author KaiDi <kai930322@outlook.com>
  */
 namespace app\admin\controller;
 
-use think\Controller;
+use app\common\controller\BaseController as Base;
 use app\common\model\User;
 
-class Index extends Controller
+class Index extends Base
 {
     public function index()
     {
@@ -17,7 +18,9 @@ class Index extends Controller
     public function login()
     {
         if ($this->request->isPost()) {
-            User::getInstance()->login($this->request);
+            return $this->_setResponse(
+                User::getInstance()->login($this->request)
+            );
         }
     }
 }

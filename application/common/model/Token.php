@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * token模型
+ */
 namespace app\common\model;
 
 use think\Modle;
@@ -22,12 +24,12 @@ class Token extends Modle
 
         /**
          * Token的生成
-         * (...$parmas)可变参数传参
+         * (...$parmas)可变参数传参,传进来的参数以数组的形式传入
          */
         public function generate(...$parmas)
         {
             /**
-             * array_combine()合并数组
+             * array_combine()合并数组,首个数组的元素作第二个数组的key
              * token存放于$parmas,含有id,role_id,userSalt
              */
             $parmas = array_combine(self::$tokenFiled, $parmas);
