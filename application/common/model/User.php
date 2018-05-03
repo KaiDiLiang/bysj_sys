@@ -20,6 +20,16 @@ class User extends Model
         }
         return self::$instance;
     }
+    
+    /**
+     * 查询前的事件
+     * beforeQueryEvent(),(指定传进的变量是谁派生出来的实例)
+     *field('', true),不查该项
+     */
+    public function beforeQueryEvent(Model $instance)
+    {
+        return $instance->field('user_password', 'user_salt', true);
+    }
 
     /**
      * 用户登录逻辑
@@ -52,8 +62,8 @@ class User extends Model
         /**传进的变量变成数组
          * 变量名=>下标，变量值=>数组对应下标的值
          */
-        self::where(compact('user_account', 'user_type'))->find();
-        
+        $user = self::where(compact('user_account', 'user_type'))->find();
+               
         /*用户是否存在*/
         if (!is_null($user)) {
             if ($user->user_enable === 'Y') {
@@ -62,9 +72,9 @@ class User extends Model
                 /**
                  * 密码 = 用户明文密码 + 用户密码盐
                  */
-                $passwordMatch = $passwordHash->checkPassword(
+                $isPasswordMatch = $passwordHash->checkPassword(
                   $user_password . $user->user_salt,
-                    $user->$user_password
+                    $user->user_password
                 );
                 if ($isPasswordMatch) {
                     /**更新用户表的信息
@@ -74,7 +84,7 @@ class User extends Model
                     $user->user_last_at = time();
                     //ip()传值转换为ipv4样式
                     $user->user_last_ip = $request->ip(1); 
-                    //uniqid()生产唯一字符串(微秒数，熵),拿到加密的盐
+                    //uniqid()生产唯一随机字符串(微秒数.熵),拿到加密的盐
                     $user->user_salt = $passwordHash->hasPassword(uniqid(microtime(), true));
                     //拿到加密后的密码
                     $user->user_password = $passwordHash->hasPassword($user_password . $user->user_salt);
@@ -86,18 +96,18 @@ class User extends Model
                      *返回加密后的token密文，string
                      */
                     $token = Tonken::getInstance()->generate($user->user_id, $user->user_role_id, $user->user_salt);
-                    return API::getJson('login-success', compact('token'));
+                    return API::setJson('login-success', compact('token'));
                 } else {
                     //todo::账号密码不匹配
-                    return API::getJson('account-password-error');
+                    return API::setJson('account-password-error');
                 }
             } else {
                 //todo::账号异常
-                return API::getJson('account-status-error');
+                return API::setJson('account-status-error');
             }
         } else {
             //todo::账号不存在
-            return API::getJson('account-not-exists');
+            return API::setJson('account-not-exists');
         }
     }
 }

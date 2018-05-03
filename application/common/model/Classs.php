@@ -27,10 +27,11 @@ class Classs extends Model
     public function getClassList()
     {
         $class = Db::name('mid_cmj')->alias('a')
-            ->field('c.*', 'd.department_name', 'm.major_name')
+            ->field('c.*, d.department_name, m.major_name')
             ->join('__CLASS_LIST__ c', 'a.c_id = c.class_id')
             ->join('__MAJOR_LIST__ m', 'a.j_id = m.major_id')
             ->join('__DEPARTMENT_LIST__ d', 'a.m_id = d.department_id')
             ->select();
+        dump($class);exit;
     }
 }
