@@ -9,6 +9,7 @@ class Student extends Base
 {
     public function getInfo()
     {
+        //直接拿学号来进行
         return $this->_setResponse(
             StudentModel::getInstance()->profile(
                 $this->request->get('s_number', '', 'trim')

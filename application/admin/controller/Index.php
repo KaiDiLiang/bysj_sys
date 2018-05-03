@@ -7,6 +7,7 @@ namespace app\admin\controller;
 
 use app\common\controller\BaseController as Base;
 use app\common\model\User;
+use app\common\model\Classs;
 
 class Index extends Base
 {
@@ -22,5 +23,10 @@ class Index extends Base
                 User::getInstance()->login($this->request)
             );
         }
+    }
+
+    public function getClassList()
+    {
+        Classs::getInstance()->getClassList();
     }
 }

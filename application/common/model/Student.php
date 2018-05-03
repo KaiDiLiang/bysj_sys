@@ -18,12 +18,13 @@ class Student extends User
 
     /**
      * 获取指定学生的详细信息
+     * profile(),获取学生学号
      * @param $studentNumber string
      * @author KaiDi <kai930322@outlook.com>
      */
     public function profile($studentNumber)
     {
-        self::where(['student_number' => $studentNumber])->find();
+        $student = self::where(['student_number' => $studentNumber])->find();
         //info => $student,返回出去的结果
         return ApI::setJson('get-student-info-success', ['info' => $student]);
     }
