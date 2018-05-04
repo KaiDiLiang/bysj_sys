@@ -7,17 +7,19 @@ namespace app\common\controller;
 
 use think\Controller;
 use think\Response\Json;
-use think\common\model\API;
+use app\common\model\API;
+use app\common\model\User as UserModel;
 
 class BaseController extends Controller
 {
-    //子类用到父类
+    //子类调用父类
     protected $model;
 
     public function initialize()
     {
         //todo::权限控制
         parent::initialize();
+        UserModel::getInstance()->checkPermission($this->request);
     }
     /**
      * 设置响应
@@ -76,7 +78,6 @@ class BaseController extends Controller
                 }
               } else {
                 $where[] = [$key , '=', $val];
-                }
             }
             return [$where, $filter, $limit, $page, $order, $sort];
         }

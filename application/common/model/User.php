@@ -22,6 +22,20 @@ class User extends Model
     }
     
     /**
+     * 判断当前用户是否拥有访问权限
+     */
+    public function checkPermission(Request $request)
+    {
+        $userToken = $request->header('X-Token', '', 'trim');
+        /**
+         *dump($request->controller());
+         * @return string 'index'
+         */
+        list($module, $controller, $action) = [$request->model(), $request->controller(), $request->action()];
+        
+    }
+
+    /**
      * 查询前的事件
      * beforeQueryEvent(),(指定传进的变量是谁派生出来的实例)
      *field('', true),不查该项
