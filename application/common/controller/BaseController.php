@@ -95,9 +95,12 @@ class BaseController extends Controller
                 $instance = $instance->beforeQueryEvent($instance);
             }
             $rows = $instance->where($where)->page($page)->limit($limit)->order($order, $sort)->select();
+            $tree = $this->request->post('_tree', '*', 'trim');
+
+            if ($tree === '√')
         }
     }
-
+    
     public function add()
     {
     }
