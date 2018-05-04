@@ -7,6 +7,7 @@ namespace app\common\controller;
 
 use think\Controller;
 use think\Response\Json;
+use think\common\model\API;
 
 class BaseController extends Controller
 {
@@ -83,6 +84,7 @@ class BaseController extends Controller
 
     /**
      * 数据查询入口
+     * @return json
      */
     public function index()
     {
@@ -95,9 +97,14 @@ class BaseController extends Controller
                 $instance = $instance->beforeQueryEvent($instance);
             }
             $rows = $instance->where($where)->page($page)->limit($limit)->order($order, $sort)->select();
-            $tree = $this->request->post('_tree', '*', 'trim');
-
-            if ($tree === '√')
+            $tree = $this->request->post('tree', '', '');
+            //toArray(),对象转换为数组形式
+            if ($tree === '√') {
+                $rows = list_to_tree($rows->toArray(), 'id', 'parent_id');
+            }
+            return $this->_setResponse(
+                API::setJson('get-data-success', compact('rows'))
+            );
         }
     }
     
