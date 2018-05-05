@@ -48,7 +48,6 @@ class Token extends Modle
             } else {
                 $token->save(compact('token_val', 'token_invali_at'));
             }
-
             /**
              * 拿到token的加密明文
              * 序列化并加密形成密文

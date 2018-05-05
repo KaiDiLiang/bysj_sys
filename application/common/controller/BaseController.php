@@ -79,8 +79,12 @@ class BaseController extends Controller
               } else {
                 $where[] = [$key , '=', $val];
             }
-            return [$where, $filter, $limit, $page, $order, $sort];
         }
+        //必须指定$this->model是哪个类，否则拿不到getPk(),默认会拿$order('id')
+        if ($this->model) {
+            $order = $this->model->getPk();
+        }
+        return [$where, $filter, $limit, $page, $order, $sort];
     }
 
     /**

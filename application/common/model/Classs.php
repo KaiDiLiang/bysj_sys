@@ -32,6 +32,5 @@ class Classs extends Model
             ->join('__MAJOR_LIST__ m', 'a.j_id = m.major_id')
             ->join('__DEPARTMENT_LIST__ d', 'a.m_id = d.department_id')
             ->select();
-        dump($class);exit;
     }
 }

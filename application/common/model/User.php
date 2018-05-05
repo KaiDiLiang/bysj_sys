@@ -28,6 +28,7 @@ class User extends Model
     {
         $userToken = $request->header('X-Token', '', 'trim');
         /**
+         * 拿模块、控制器、方法
          *dump($request->controller());
          * @return string 'index'
          */
