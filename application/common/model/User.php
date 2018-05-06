@@ -7,6 +7,7 @@ namespace app\common\model;
 
 use think\Model;
 use think\Request;
+use think\Db;
 
 class User extends Model
 {
@@ -33,7 +34,34 @@ class User extends Model
          * @return string 'index'
          */
         list($module, $controller, $action) = [$request->model(), $request->controller(), $request->action()];
-        
+        /**
+         * -1.如果当前的规则需要登录。但是用户没有登录（请求没有携带X-Token）返回信息401
+         * 1.先拿到当前用户的token，并解析出role_id
+         * 2.通过role_id跟当前访问的权限规则（模块、控制器、方法），判断有没有被分配
+         * 3.当前用户没有访问该规则的权限时，返回信息 403
+         */
+        if (!$userToken) {
+            return API::setJson('user-unauthorizod-error', [], 401, [], true);
+        }
+        $token = Token::parse($userToken);
+
+        if (!$token === false) {
+            return API::setJson('user-token-parse-error', [], 403, [], true);
+        }
+
+        $hasPermission = Db::name('auth_allot')->alias('a')->join('__AUTH_ROLE__ b', 'a.role_id = b.role_id')
+            ->join('__AUTH_RULES__ c', 'a.rule_id = c.rule_id')
+            ->where([
+                'a.role_id' => $token['userRoleId'],
+                'c.rule_module' => $module,
+                'c.rule_controller' => $controller,
+                'c.rule_enable' => 'Y',
+                'c.rule_action' => $action
+            ])
+            ->count();
+        if ( $hasPermission < 1) {
+            return API::setJson('user-forbidden-error', [], 403, [], true);
+        }
     }
 
     /**

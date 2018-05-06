@@ -11,6 +11,12 @@ use app\common\model\Classs;
 
 class Index extends Base
 {
+    public function initialize()
+    {
+        parent::initialize();
+        $this->noNeedLogin = ['login'];
+    }
+
     public function index()
     {
 

@@ -15,11 +15,25 @@ class BaseController extends Controller
     //子类调用父类
     protected $model;
 
+    /**
+     * 不需要登录的方法 action
+     * @var array
+     * 给予权限判断使用
+     */
+    protected $noNeedLogin = [];
+
     public function initialize()
     {
         //todo::权限控制
         parent::initialize();
-        UserModel::getInstance()->checkPermission($this->request);
+        //如果访问过来的URL是$this->noNeedLogin(),则不需要进行登录
+        if (in_array($this->request->action, $this->noNeedLogin)) {
+            //实现权限控制
+           $result = UserModel::getInstance()->checkPermission($this->request);
+           if ($result !== true) {
+               return $this->_setResponse($result);
+           }
+        }
     }
     /**
      * 设置响应
@@ -44,7 +58,7 @@ class BaseController extends Controller
         $filter = $this->request->post('filter', '', 'trim');
         $limit = $this->request->post('limit', '25', 'intval');
         $page = $this->request->post('page', 1, 'intval');
-        $order = $this->request->post('order', 'id', 'trim');
+        $order = $this->request->post('order', '', 'trim');
         $sort = $this->request->post('sort', 'DESC', 'trim');
         $op = $this->request->post('op', '', 'trim');
 
@@ -80,10 +94,14 @@ class BaseController extends Controller
                 $where[] = [$key , '=', $val];
             }
         }
-        //必须指定$this->model是哪个类，否则拿不到getPk(),默认会拿$order('id')
-        if ($this->model) {
-            $order = $this->model->getPk();
-        }
+        /**
+         * 必须指定$this->model是哪个类，否则拿不到getPk(),默认会拿$order('id')
+         * 该model是一个类名
+         *
+         *   if ($this->model) {
+         *      $order = $this->model->getPk();
+         *  }
+         */
         return [$where, $filter, $limit, $page, $order, $sort];
     }
 
@@ -101,6 +119,9 @@ class BaseController extends Controller
             if (method_exists($this->model, 'beforeQueryEvent')) {
                 $instance = $instance->beforeQueryEvent($instance);
             }
+            //自动判断表的id自增来查询
+            $order = $order ? $instance->getPk() : $order;
+
             $rows = $instance->where($where)->page($page)->limit($limit)->order($order, $sort)->select();
             $tree = $this->request->post('tree', '', '');
             //toArray(),对象转换为数组形式

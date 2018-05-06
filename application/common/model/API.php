@@ -30,7 +30,7 @@ class API extends Model
      * 
      * @return think\Response\Json
      */
-    static public function setJson($code, array $data = [], $http_code = 200, array $header = [])
+    static public function setJson($code, array $data = [], $http_code = 200, array $header = [], $isEnd = false)
     {
         /**
          * 查找响应码
@@ -48,9 +48,19 @@ class API extends Model
             $type = end($temp);
             if ($type === 'success') {
                 $result = ['code' => 0, 'remark' => $code];
+            } else {
+                $result = ['code' => -1, 'remark' => $code];
             }
         }
         $result['code'] = intval($result['code']);
-        return json(compact('result', 'data'))->code($http_code)->header($header);
+        $response = compact('result', 'data');
+        if ($isEnd) {
+            //显示页面状态码
+            http_response_code($http_code);
+            header('Content-Type', 'application/json;charset=utf-8');
+            echo json_encode($response);
+        } else {
+            return json($response)->code($http_code)->header($header);
+        }
     }
 }

@@ -23,6 +23,24 @@ class Token extends Modle
         }
 
         /**
+         * 解析token，并验证token的有效性
+         */
+        static public function parse($token)
+        {
+            $token = CrytoJSAER::decrypt($token, SUMMUY_KEY);
+            if (!$token) return false;
+            $token = unserialize($token);
+            $rows = self::where(['user_id' => $token['userId']])->field('token_val, token_invali_at')->find();
+            $user = User::where(['user_id' => $token['userId']])->field('user_salt, user_role_id')->find();
+            //返回的token时间<现在时间，则token过期
+            if ($rows->token_invali_at < time() || $row->token_val !== $token['token'] || $user
+                ->user_salt !== $token['userSalt'] || $user->user_role_id !== $token['userRoleId']) {
+                return false;
+            }
+            return $token;
+        }
+
+        /**
          * Token的生成
          * (...$parmas)可变参数传参,传进来的参数以数组的形式传入
          */
