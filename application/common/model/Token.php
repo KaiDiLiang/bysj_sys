@@ -42,7 +42,7 @@ class Token extends Modle
             $user_id = &$parmas['userId'];
             
             //查找token是否存在
-            $token = self::where(['user_id' => $parmas['userId']]->find());
+            $token = self::where(['user_id' => $parmas['userId']])->find();
             if (is_null($token)) {
                 $this->save(compact('token_val', 'token_create_at', 'token_invali_at', 'user_id'));
             } else {
