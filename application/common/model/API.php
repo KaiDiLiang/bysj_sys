@@ -36,7 +36,7 @@ class API extends Model
          * 查找响应码
          *strtolower(),转换为小写
          */
-        $result = self::where(['api_code' => strtolower($code)])->filed('api_short_code as code, api_remark as remark')->find();
+        $result = self::where(['api_code' => strtolower($code)])->field('api_short_code as code, api_remark as remark')->find();
        
         /**
          * $result = false时,

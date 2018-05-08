@@ -12,6 +12,13 @@ use app\common\model\User as UserModel;
 
 class BaseController extends Controller
 {
+
+    /**
+     * api返回码前缀 比如 data-insert-
+     * @var string|null
+     */
+    protected $apiPrefix = null;
+
     //子类调用父类
     protected $model;
 
@@ -48,6 +55,24 @@ class BaseController extends Controller
         } else {
             //todo::非json响应
         }
+    }
+
+    /**
+     * 封装api响应
+     * @param $type boolean
+     * @param $data array
+     * 
+     * @return think\Response\Json
+     */
+    final protected function setAPIResponse($tyep = true, array $data = [])
+    {
+        $perfix = $this->apiPrefix 
+            ? $this->apiPrefix 
+            : join([$this->request->module(), $this->request->controller(),$this->request->action()], '-');
+        
+        return $this->_setResponse(
+            API::setJson($perfix . $tyep ? 'success' : 'error', $data)
+        );
     }
 
     /**
@@ -136,6 +161,27 @@ class BaseController extends Controller
     
     public function add()
     {
+        if ($this->request->isPost()) {
+            $this->apiPrefix = 'data-insert-';
+            $row = $this->request->post('row/a', null, 'trim');
+            if (!$rows) return $this->_setResponse(API::setJson('no-data-error'));
+            if ($this->model) {
+                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
+            }
+            $instance = $instance->data($row);
+            if (method_exists($this->model, 'beforeAddEvent')) {
+                $instance = $instance->beforeAddEvent($instance);
+            }
+            if ($instance->save() > 0) {
+                return $this->setAPIResponse();
+            } else {
+                return $this->setAPIResponse(false, config('app_debug') ? ['msg' => $instance->getError()] : []);
+            }
+        } else {
+            return $this->_setResponse(
+                API::setJson('acesss-request-error')
+            );
+        }
     }
 
     public function update()

@@ -112,6 +112,7 @@ class User extends Model
             if ($user->user_enable === 'Y') {
                 //密码加密
                 $passwordHash = new \Pentagonal\PhPass\PasswordHash();
+                //dump($passwordHash);exit;
                 /**
                  * 密码 = 用户明文密码 + 用户密码盐
                  */
@@ -128,9 +129,9 @@ class User extends Model
                     //ip()传值转换为ipv4样式
                     $user->user_last_ip = $request->ip(1); 
                     //uniqid()生产唯一随机字符串(微秒数.熵),拿到加密的盐
-                    $user->user_salt = $passwordHash->hasPassword(uniqid(microtime(), true));
+                    $user->user_salt = $passwordHash->hashPassword(uniqid(microtime(), true));
                     //拿到加密后的密码
-                    $user->user_password = $passwordHash->hasPassword($user_password . $user->user_salt);
+                    $user->user_password = $passwordHash->hashPassword($user_password . $user->user_salt);
                     //拿到的数据写入数据库
                     $user->save();
 
@@ -138,7 +139,7 @@ class User extends Model
                      * 生成Token,索引数组形式
                      *返回加密后的token密文，string
                      */
-                    $token = Tonken::getInstance()->generate($user->user_id, $user->user_role_id, $user->user_salt);
+                    $token = Token::getInstance()->generate($user->user_id, $user->user_role_id, $user->user_salt);
                     return API::setJson('login-success', compact('token'));
                 } else {
                     //todo::账号密码不匹配

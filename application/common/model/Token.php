@@ -4,10 +4,10 @@
  */
 namespace app\common\model;
 
-use think\Modle;
+use think\Model;
 use Blocktrail\CryptoJSAES\CryptoJSAES;
 
-class Token extends Modle
+class Token extends Model
 {
         protected $name = 'auth_token';
         
@@ -50,9 +50,9 @@ class Token extends Modle
              * array_combine()合并数组,首个数组的元素作第二个数组的key
              * token存放于$parmas,含有id,role_id,userSalt
              */
-            $parmas = array_combine(self::$tokenFiled, $parmas);
+            $parmas = array_combine(self::$tokenField, $parmas);
             //uniqid(),用微秒给token加上唯一的字符串
-            $token_val = uniqid(miscrotime() . $parmas['userSalt'], true);
+            $token_val = uniqid(microtime() . $parmas['userSalt'], true);
             //token生成的时间戳
             $token_create_at = time();
             //token的有效时间
