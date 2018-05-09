@@ -9,6 +9,7 @@ use think\Controller;
 use think\Response\Json;
 use app\common\model\API;
 use app\common\model\User as UserModel;
+use think\Model;
 
 class BaseController extends Controller
 {
@@ -163,8 +164,10 @@ class BaseController extends Controller
     {
         if ($this->request->isPost()) {
             $this->apiPrefix = 'data-insert-';
+            //post过来的数据数组化
             $row = $this->request->post('row/a', null, 'trim');
-            if (!$rows) return $this->_setResponse(API::setJson('no-data-error'));
+            if (!$row) return $this->_setResponse(API::setJson('no-data-error'));
+            //判断类是否被定义
             if ($this->model) {
                 $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
             }
@@ -186,9 +189,33 @@ class BaseController extends Controller
 
     public function update()
     {
+        if ($this->request->isPost()) {
+            $row = $this->request->post('row/a'); // 更新的数据
+            $condition = $this->request->post('condition/a', '' , 'trim');// 更新的条件
+            if ($this->model) {
+                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
+                if (method_exists($this->model, 'beforeUpdateEvent')) $instance = $instance->beforeUpdateEvent($instance);
+                if ($instance instanceof Model) {
+                    $result = $instance->save($row, $condition);
+                    dump($result);
+                }
+            }
+        }
     }
 
     public function delete()
     {
+        
+        if ($this->request->isPost()) {
+            $row = $this->request->post('row/a');
+            $condition = $this->request->post('condition/a', '', 'trim');
+            if ($this->model) {
+                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() :(new $this->model);
+                if (method_exists($this->model,'beforeDeleteEvent')) $instance = $instance->beforeDeleteEvent($instance);
+                if ($instance instanceof Model) {
+                    $result = $instance->delete($row, $condition);
+                }
+            }
+        }
     }
 }
