@@ -131,6 +131,11 @@ class BaseController extends Controller
         return [$where, $filter, $limit, $page, $order, $sort];
     }
 
+    private function getCurrentModel()
+    {
+        return method_exists($this->model, 'getInstance') ? $this->model::getInstance() :(new $this->model);
+    }
+
     /**
      * 数据查询入口
      * @return json
@@ -138,25 +143,31 @@ class BaseController extends Controller
     public function index()
     {
         if ($this->request->isPost()) {
-            list($where, $limit, $page, $order, $sort) = $this->buildParams();
-            if ($this->model) {
-                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
-            }
-            if (method_exists($this->model, 'beforeQueryEvent')) {
-                $instance = $instance->beforeQueryEvent($instance);
-            }
-            //自动判断表的id自增来查询
-            $order = $order ? $instance->getPk() : $order;
+            list($where, $filter, $limit, $page, $order, $sort) = $this->buildParams();
 
-            $rows = $instance->where($where)->page($page)->limit($limit)->order($order, $sort)->select();
-            $tree = $this->request->post('tree', '', '');
-            //toArray(),对象转换为数组形式
-            if ($tree === '√') {
-                $rows = list_to_tree($rows->toArray(), 'id', 'parent_id');
+            if ($this->model) {
+                $instance = method_exists($this->model, 'getInstance') 
+                    ? $this->model::getInstance() 
+                    : (new $this->model);
+            
+                if (method_exists($instance, 'beforeQueryEvent')) {
+                    $instance = $instance->beforeQueryEvent($instance);
+                }
+
+                //自动判断表的id自增来查询
+                $order = $order ? $instance->getPk() : $order;
+
+                $rows = $instance->where($where)->page($page)->limit($limit)->order($order, $sort)->select();
+
+                $tree = $this->request->post('tree', '', '');
+                //toArray(),对象转换为数组形式
+                if ($tree === '√') {
+                    $rows = list_to_tree($rows->toArray(), 'id', 'parent_id');
+                }
+                return $this->_setResponse(
+                    API::setJson('get-data-success', compact('rows'))
+                );
             }
-            return $this->_setResponse(
-                API::setJson('get-data-success', compact('rows'))
-            );
         }
     }
     
@@ -166,15 +177,16 @@ class BaseController extends Controller
             $this->apiPrefix = 'data-insert-';
             //post过来的数据数组化
             $row = $this->request->post('row/a', null, 'trim');
+            dump($row);exit;
             if (!$row) return $this->_setResponse(API::setJson('no-data-error'));
             //判断类是否被定义
-            if ($this->model) {
-                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
-            }
+            $instance = $this->getCurrentModel();
             $instance = $instance->data($row);
             if (method_exists($this->model, 'beforeAddEvent')) {
                 $instance = $instance->beforeAddEvent($instance);
             }
+            //dump($instance);
+            $result = $instance->save();
             if ($instance->save() > 0) {
                 return $this->setAPIResponse();
             } else {
@@ -193,10 +205,10 @@ class BaseController extends Controller
             $row = $this->request->post('row/a'); // 更新的数据
             $condition = $this->request->post('condition/a', '' , 'trim');// 更新的条件
             if ($this->model) {
-                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() : (new $this->model);
+                $instance = $this->getCurrentModel();
                 if (method_exists($this->model, 'beforeUpdateEvent')) $instance = $instance->beforeUpdateEvent($instance);
                 if ($instance instanceof Model) {
-                    $result = $instance->save($row, $condition);
+                    $result = $instance->save($row, $conditin);
                     dump($result);
                 }
             }
@@ -205,15 +217,18 @@ class BaseController extends Controller
 
     public function delete()
     {
-        
         if ($this->request->isPost()) {
-            $row = $this->request->post('row/a');
-            $condition = $this->request->post('condition/a', '', 'trim');
-            if ($this->model) {
-                $instance = method_exists($this->model, 'getInstance') ? $this->model::getInstance() :(new $this->model);
-                if (method_exists($this->model,'beforeDeleteEvent')) $instance = $instance->beforeDeleteEvent($instance);
-                if ($instance instanceof Model) {
-                    $result = $instance->delete($row, $condition);
+            $this->apiPrefix = 'data-delete-';
+            $ids = $this->request->post('ids/a', '', 'trim');
+            $primaryKey = $this->request->post('primary', 'id', 'trim');
+            if ($ids) {
+                if ($this->model) {
+                    $instance = $this->getCurrentModel();
+                    if (method_exists($instance,'beforeDeleteEvent')) $instance = $instance->beforeDeleteEvent($instance);
+                    if ($instance instanceof Model) {
+                        $result = $instance::where($primaryKey, 'in', $ids)->delete();
+                        return $result > 0 ? $this->setAPIResponse() : $this->setAPIResponse(false);
+                    }
                 }
             }
         }

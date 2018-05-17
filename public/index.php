@@ -11,8 +11,7 @@
 
 // [ 应用入口文件 ]
 namespace think;
-
-//解决跨域
+//解决跨域问题
 header('Access-Control-Allow-Origin:*');
 header('Access-Control-Allow-Methods:GET, PUT, DELETE, POST');
 header('Access-Control-Allow-Headers: Content-Type, X-Token');

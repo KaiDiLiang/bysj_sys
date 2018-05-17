@@ -68,10 +68,21 @@ class User extends Model
      * 查询前的事件
      * beforeQueryEvent(),(指定传进的变量是谁派生出来的实例)
      *field('', true),不查该项
-     */
+     */     
     public function beforeQueryEvent(Model $instance)
     {
-        return $instance->field('user_password', 'user_salt', true);
+        $getTableFields = $instance->getTableFields();
+        $uniqid = ['user_password', 'user_salt'];
+        // 两个数组去重
+        $res = array_merge(array_diff($getTableFields, $uniqid), array_diff($uniqid, $getTableFields));
+        $str = '';
+        foreach ($res as $r) {
+            $str .= 'a.' . $r.' , '; 
+        }
+        return $instance
+            ->alias('a')
+            ->field($str . ' b.*')
+            ->join(strtoupper('__user_base__') . ' b', 'a.user_account = b.account_number');
     }
 
     /**
